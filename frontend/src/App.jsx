@@ -1,122 +1,72 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import UserLayout from "./layouts/UserLayout"; 
+import ProtectedRoute from "./auth/ProtectedRoute";
 
-function App() {
-  const [count, setCount] = useState(0)
+// User Pages
+import LandingPage from "./pages/users/LandingPage";
+import LoginPage from "./pages/users/LoginPage";
+import RegisterPage from "./pages/users/RegisterPage";
+import HomeRedirect from "./pages/users/HomeRedirect";
+import ApplyPage from "./pages/users/ApplyPage";
+import AgreementPage from "./pages/users/AgreementPage";
+import WaitingPage from "./pages/users/WaitingPage";
+import PayoutPage from "./pages/users/PayoutPage";
+import HistoryPage from "./pages/users/HistoryPage";
+import HelpPage from "./pages/users/HelpPage";
+import MyLoanPage from "./pages/users/MyLoanPage";
+import ProfilePage from "./pages/users/ProfilePage";
+import PayLoanPage from "./pages/users/PayLoanPage";
 
+// Company Pages
+import AboutPage from "./pages/users/AboutPage";
+import PrivacyPolicyPage from "./pages/users/PrivacyPolicyPage";
+import TermsOfServicePage from "./pages/users/TermsOfServicePage";
+
+// Developer Pages
+import DeveloperLoginPage from "./pages/developers/DeveloperLoginPage";
+import DeveloperDashboardPage from "./pages/developers/DeveloperDashboardPage";
+
+export default function App() {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <BrowserRouter>
+      <Routes>
+        {/* Public Pages */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms" element={<TermsOfServicePage />} />
 
-      <div className="ticks"></div>
+        {/* Auth Pages (No Sidebar) */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        {/* Protected User App (With Sidebar) */}
+        <Route element={<ProtectedRoute role="user" />}>
+          <Route element={<UserLayout />}>
+            {/* /app renders ActiveLoanPage via HomeRedirect */}
+            <Route path="/app" element={<HomeRedirect />} />
+            
+            <Route path="/app/apply" element={<ApplyPage />} />
+            <Route path="/app/agreement" element={<AgreementPage />} />
+            <Route path="/app/waiting" element={<WaitingPage />} />
+            <Route path="/app/payout" element={<PayoutPage />} />
+            
+            {/* These now match the sidebar links */}
+            <Route path="/app/loan" element={<MyLoanPage />} />
+            <Route path="/app/pay" element={<PayLoanPage />} />
+            
+            <Route path="/app/history" element={<HistoryPage />} />
+            <Route path="/app/help" element={<HelpPage />} />
+            <Route path="/app/profile" element={<ProfilePage />} />
+          </Route>
+        </Route>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        {/* Developer Routes */}
+        <Route path="/admin" element={<DeveloperLoginPage />} />
+        <Route element={<ProtectedRoute role="developer" />}>
+          <Route path="/admin/dashboard" element={<DeveloperDashboardPage />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
 }
-
-export default App
