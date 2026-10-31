@@ -1,4 +1,4 @@
-# 🐝 BorrowBee
+#  BorrowBee
 
 > Quick cash. Clear terms. Approved in 30 minutes.
 
@@ -6,7 +6,7 @@ BorrowBee is a modern micro-lending platform for the Kenyan market. Borrowers si
 
 ---
 
-## ✨ Features
+##  Features
 
 ### Borrower App
 - **ID-based sign-in** (with fingerprint sign-in ready for production)
@@ -32,7 +32,7 @@ BorrowBee is a modern micro-lending platform for the Kenyan market. Borrowers si
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 BorrowBee is split into a **`frontend/`** and **`backend/`** for clean separation of concerns:
 borrowbee/
@@ -74,7 +74,7 @@ Flask-RESTful's **Resource classes are the idiomatic equivalent of Express route
 
 ---
 
-## 🧰 Tech Stack
+##  Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -87,7 +87,7 @@ Flask-RESTful's **Resource classes are the idiomatic equivalent of Express route
 
 ---
 
-## 🎨 Color Palette
+## Color Palette
 
 | Token | Hex | Usage |
 |---|---|---|
@@ -101,7 +101,7 @@ Defined in `frontend/src/index.css` as Tailwind v4 `@theme` tokens (`--color-bra
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - **Node.js** 20.19+ or 22.12+
@@ -156,7 +156,7 @@ Frontend → http://localhost:5173
 
 Backend → http://localhost:4000/api/health
 
-🔌 API Reference
+## API Reference
 All endpoints are prefixed with /api.
 
 Method	Endpoint	Description	Called by
