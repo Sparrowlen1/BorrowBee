@@ -2,7 +2,7 @@ export const INTEREST_RATE = 0.15;
 export const LOAN_TERM_DAYS = 30;
 export const MIN_AMOUNT = 500;
 export const NEW_USER_LIMIT = 5000;
-export const PASSCODE = "bee-admin";
+export const PASSCODE = "admin123";
 
 export const STATUS = {
   NONE: "none",

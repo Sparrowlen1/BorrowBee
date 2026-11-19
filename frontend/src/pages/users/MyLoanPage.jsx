@@ -244,7 +244,7 @@ export default function MyLoanPage() {
           </div>
         </div>
 
-        {/* Paying Later & Support */}
+       
         <div className="bg-[#111A17] border border-white/5 rounded-[20px] p-6 md:p-8 flex flex-col gap-3">
           <h2 className="text-[18px] font-extrabold text-white mb-1">Paying later?</h2>
           <p className="text-[14px] text-[#A9C4BE] leading-relaxed mb-2 flex-1">
