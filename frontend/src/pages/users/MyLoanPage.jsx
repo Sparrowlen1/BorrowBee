@@ -12,21 +12,28 @@ export default function MyLoanPage() {
   const { loan } = useLoan();
   const [isSupportOpen, setIsSupportOpen] = useState(false);
 
-  // Extract real data from context, with fallbacks if empty
+  // --- DYNAMIC CALCULATIONS ---
   const amountBorrowed = loan?.amount || 5000;
-  const interest = loan?.interest || 750;
-  const total = loan?.total || 5750;
-  const phone = loan?.phone || "07•• ••• 678";
+  // Calculate interest dynamically if it's missing from the loan object
+  const interest = loan?.interest || Math.round(amountBorrowed * 0.15);
+  // Calculate total dynamically (fixes the 5750 bug if totalDue is missing)
+  const total = loan?.totalDue || Math.round(amountBorrowed + interest);
+  const phone = loan?.payoutPhone || loan?.phone || "07•• ••• 678";
   
-  // Use the actual dates if they exist, otherwise fallbacks
-  const sentOn = loan?.createdAt 
-    ? new Date(loan.createdAt).toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' })
-    : "19 Oct 2026";
-  const dueDate = loan?.dueDate 
-    ? new Date(loan.dueDate).toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' })
-    : "18 Nov 2026";
+  // Date calculations
+  const now = new Date();
+  const disbursedAtObj = loan?.disbursedAt ? new Date(loan.disbursedAt) : (loan?.createdAt ? new Date(loan.createdAt) : now);
+  const dueDateObj = loan?.dueDate ? new Date(loan.dueDate) : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-  const progressPercent = 40;
+  const sentOn = disbursedAtObj.toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' });
+  const dueDate = dueDateObj.toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' });
+  
+  // Calculate day counters for the hexagon and badge
+  const daysPassed = Math.max(1, Math.ceil((now - disbursedAtObj) / (1000 * 60 * 60 * 24)));
+  const daysLeft = Math.max(0, Math.ceil((dueDateObj - now) / (1000 * 60 * 60 * 24)));
+  
+  // Progress percent capped at 100
+  const progressPercent = Math.min(100, (daysPassed / 30) * 100);
 
   // --- GENERATE PDF FROM FILLED DETAILS ---
   const handleDownloadAgreement = () => {
@@ -34,7 +41,7 @@ export default function MyLoanPage() {
 
     // Extract real guarantor data
     const gName = loan?.guarantor?.name || "Paul M.";
-    const gId = loan?.guarantor?.id || "87654321";
+    const gId = loan?.guarantor?.idNumber || "87654321"; // Fixed: idNumber instead of id
     const gPhone = loan?.guarantor?.phone || "0798765432";
     const bName = borrower?.name || "Amina Wanjiru";
     const bId = borrower?.idNumber || "12345678";
@@ -126,7 +133,9 @@ export default function MyLoanPage() {
         
         <div className="flex justify-between items-start">
           <h2 className="text-[20px] font-extrabold text-white">Active loan</h2>
-          <span className="text-[13px] font-extrabold px-3 py-1 rounded-full bg-[#FFB300] text-[#004D40]">Due in 18 days</span>
+          <span className="text-[13px] font-extrabold px-3 py-1 rounded-full bg-[#FFB300] text-[#004D40]">
+            Due in {daysLeft} days
+          </span>
         </div>
 
         <div className="flex flex-wrap items-center gap-6 md:gap-10 mt-2 relative z-10">
@@ -137,7 +146,7 @@ export default function MyLoanPage() {
               <polygon points="50,5 91,28 91,72 50,95 9,72 9,28" fill="none" stroke="#FFB300" strokeWidth="6" strokeLinecap="round" pathLength="100" strokeDasharray={`${progressPercent} 100`} />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center font-extrabold text-[14px] leading-tight text-white">
-              <span>Day 12</span>
+              <span>Day {daysPassed}</span>
               <span className="text-[12px] text-white/70 font-semibold">of 30</span>
             </div>
           </div>

@@ -7,20 +7,29 @@ import SupportModal from "../../components/SupportModal";
 
 export default function ActiveLoanPage() {
   const navigate = useNavigate();
-  const { loan } = useLoan(); // Removed 'repay' since we are routing to the payment page now
+  const { loan, limit } = useLoan(); // Added 'limit' from context
   const [isSupportOpen, setIsSupportOpen] = useState(false); 
 
   const hasLoan = !!loan;
   
-  const amountDue = hasLoan ? loan.total : 5750;
-  const amountBorrowed = hasLoan ? loan.amount : 5000;
-  const dueDateStr = loan?.dueDate
-    ? new Date(loan.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
-    : "18 Nov 2026";
+  // Dynamic Calculations
+  const amountDue = hasLoan ? (loan.totalDue || loan.amount * 1.15) : 0;
+  const amountBorrowed = hasLoan ? loan.amount : 0;
+  
+  const now = new Date();
+  const dueDateObj = loan?.dueDate ? new Date(loan.dueDate) : now;
+  const disbursedAtObj = loan?.disbursedAt ? new Date(loan.disbursedAt) : now;
 
-  const dayCounter = 12; 
+  // Calculate Days
+  const daysLeft = Math.max(0, Math.ceil((dueDateObj - now) / (1000 * 60 * 60 * 24)));
+  const daysPassed = Math.max(1, Math.ceil((now - disbursedAtObj) / (1000 * 60 * 60 * 24)));
+  
+  const dueDateStr = dueDateObj.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  const disbursedDateStr = disbursedAtObj.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+
+  const dayCounter = daysPassed; 
   const totalDays = 30;
-  const progressPercent = (dayCounter / totalDays) * 100;
+  const progressPercent = Math.min(100, (dayCounter / totalDays) * 100);
 
   return (
     <div className="flex flex-col gap-5 mt-2">
@@ -35,7 +44,9 @@ export default function ActiveLoanPage() {
               {hasLoan ? "Active loan" : "Welcome to BorrowBee"}
             </h2>
             {hasLoan ? (
-              <span className="text-[13px] font-extrabold px-3 py-1 rounded-full bg-[#FFB300] text-[#004D40]">Due in 18 days</span>
+              <span className="text-[13px] font-extrabold px-3 py-1 rounded-full bg-[#FFB300] text-[#004D40]">
+                Due in {daysLeft} days
+              </span>
             ) : (
               <span className="text-[13px] font-extrabold px-3 py-1 rounded-full bg-[#FFB300] text-[#004D40]">No active loan</span>
             )}
@@ -74,13 +85,20 @@ export default function ActiveLoanPage() {
           <div className="flex flex-wrap gap-3 mt-2 relative z-10">
             {hasLoan ? (
               <>
-                {/* Changed to route to /app/pay */}
                 <button onClick={() => navigate("/app/pay")} className="min-h-[46px] px-6 rounded-xl bg-[#FFB300] text-[#004D40] font-extrabold text-[15px] hover:bg-yellow-400 transition-colors shadow-lg shadow-[#FFB300]/20">
                   Pay {K(amountDue)}
                 </button>
-                <button onClick={() => toast.info("Agreement PDF opened (demo).")} className="min-h-[46px] px-6 rounded-xl border-2 border-[#00BFA5]/40 text-white font-extrabold text-[15px] hover:bg-[#00BFA5]/10 transition-colors">
-                  View agreement
-                </button>
+                
+                {/* Dynamic Download Button */}
+                {loan.agreementUrl ? (
+                  <a href={loan.agreementUrl} download={`Agreement-${loan.id}.pdf`} className="min-h-[46px] px-6 rounded-xl border-2 border-[#00BFA5]/40 text-white font-extrabold text-[15px] hover:bg-[#00BFA5]/10 transition-colors flex items-center justify-center">
+                    Download agreement
+                  </a>
+                ) : (
+                  <button disabled className="min-h-[46px] px-6 rounded-xl border-2 border-white/10 text-white/50 font-extrabold text-[15px] cursor-not-allowed">
+                    No agreement
+                  </button>
+                )}
               </>
             ) : (
               <button onClick={() => navigate("/app/apply")} className="min-h-[46px] px-6 rounded-xl bg-[#FFB300] text-[#004D40] font-extrabold text-[15px] hover:bg-yellow-400 transition-colors shadow-lg shadow-[#FFB300]/20">
@@ -105,7 +123,7 @@ export default function ActiveLoanPage() {
 
           <div className="bg-white/[0.03] border border-white/10 rounded-[20px] p-6 flex flex-col gap-1">
             <p className="text-[14px] text-[#A9C4BE] mb-1">Your limit</p>
-            <div className="text-[32px] font-extrabold text-white leading-none">{K(5000)}</div>
+            <div className="text-[32px] font-extrabold text-white leading-none">{K(limit)}</div>
             <p className="text-[14px] text-[#A9C4BE] mt-2 leading-relaxed">New borrower limit. The lender may raise it after review.</p>
           </div>
         </div>
@@ -122,8 +140,8 @@ export default function ActiveLoanPage() {
                 <div className="flex gap-3 items-start">
                   <div className="flex-none w-3 h-3.5 mt-1 bg-[#00BFA5]" style={{ clipPath: "polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%)" }}></div>
                   <div>
-                    <b className="block font-bold text-white">Money sent to {loan.phone || "07•• ••• 678"}</b>
-                    <span className="text-[13px] text-[#A9C4BE]">19 Oct · {K(amountBorrowed)}</span>
+                    <b className="block font-bold text-white">Money sent to {loan.payoutPhone || loan.phone}</b>
+                    <span className="text-[13px] text-[#A9C4BE]">{disbursedDateStr} · {K(amountBorrowed)}</span>
                   </div>
                 </div>
                 
@@ -131,7 +149,7 @@ export default function ActiveLoanPage() {
                   <div className="flex-none w-3 h-3.5 mt-1 bg-[#00BFA5]" style={{ clipPath: "polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%)" }}></div>
                   <div>
                     <b className="block font-bold text-white">Loan approved</b>
-                    <span className="text-[13px] text-[#A9C4BE]">19 Oct · after 24 minutes</span>
+                    <span className="text-[13px] text-[#A9C4BE]">{disbursedDateStr}</span>
                   </div>
                 </div>
                 
@@ -139,7 +157,7 @@ export default function ActiveLoanPage() {
                   <div className="flex-none w-3 h-3.5 mt-1 bg-[#00BFA5]" style={{ clipPath: "polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%)" }}></div>
                   <div>
                     <b className="block font-bold text-white">Agreement and guarantor submitted</b>
-                    <span className="text-[13px] text-[#A9C4BE]">19 Oct</span>
+                    <span className="text-[13px] text-[#A9C4BE]">{disbursedDateStr}</span>
                   </div>
                 </div>
                 
