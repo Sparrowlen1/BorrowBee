@@ -18,7 +18,8 @@ export function LoanProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    if (!loan || loan.status !== STATUS.PENDING) return;
+    // FIX: Continue polling if PENDING or APPROVED (so they see the disbursement update)
+    if (!loan || (loan.status !== STATUS.PENDING && loan.status !== STATUS.APPROVED)) return;
     const t = setInterval(async () => {
       try { setLoan(await loanApi.getLoan(loan.id)); } catch {}
     }, 5000);
